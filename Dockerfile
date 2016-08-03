@@ -13,7 +13,7 @@ ARG VCS_REF
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.docker.dockerfile="/Dockerfile" \
     org.label-schema.license="EPL" \
-    org.label-schema.name="openHAB" \
+    org.label-schema.name="openHAB2" \
     org.label-schema.url="http://www.openhab.com/" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-type="Git" \
