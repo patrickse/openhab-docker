@@ -3,7 +3,7 @@ ARCHS ?= amd64 armhf arm64
 BASE_ARCH ?= amd64
 DOCKER_REPO ?= openhab/openhab
 TRAVIS_GIT_REPO ?= openhab/openhab-docker
-TRAVIS_GIT_BRANCH ?= master
+TRAVIS_GIT_BRANCH ?= openHAB2
 FLAVOR ?= online
 TRAVIS_TOKEN ?= secretsecret
 
