@@ -13,8 +13,15 @@ else
   DOWNLOAD_URL="https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.zip"
 endif
 
+ifeq ($(TARGET),amd64)
+  ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu/bin/zulu8.14.0.1-jdk8.0.91-linux_x64.tar.gz
+else
+  ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu-embedded/bin/ezdk-1.8.0_91-8.14.0.6-linux_aarch32.tar.gz
+endif
+
+
 build: tmp-$(TARGET)/Dockerfile
-	docker build --build-arg ARCH=$(TARGET) --build-arg DOWNLOAD_URL=$(DOWNLOAD_URL) --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` -t $(DOCKER_REPO):$(TARGET)-$(FLAVOR) tmp-$(TARGET)
+	docker build --build-arg ARCH=$(TARGET) --build-arg DOWNLOAD_URL=$(DOWNLOAD_URL) --build-arg ZULU_DOWNLOAD_URL=$(ZULU_DOWNLOAD_URL) --build-arg VCS_REF=`git rev-parse --short HEAD` --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` -t $(DOCKER_REPO):$(TARGET)-$(FLAVOR) tmp-$(TARGET)
 	docker run --rm $(DOCKER_REPO):$(TARGET)-$(FLAVOR) uname -a
 
 tmp-$(TARGET)/Dockerfile: Dockerfile $(shell find files)

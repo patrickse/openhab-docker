@@ -4,6 +4,13 @@ FROM multiarch/ubuntu-debootstrap:amd64-wily
 #FROM multiarch/ubuntu-debootstrap:arm64-wily   # arch=arm64
 ARG ARCH=amd64
 
+ARG ZULU_SHA=66faeba9f310cb2cbfa783dea38251b0a57509d8d297d46ffa7a6d18f764dcff
+ARG ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu/bin/zulu8.14.0.1-jdk8.0.91-linux_x64.tar.gz 
+
+#ARG ZULU_SHA=ad204157dd34fe95c8dd3a0b83b6b1a3327019b90d2c14f33bd151917a5ad78a                           #arch=armhf
+#ARG ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu-embedded/bin/ezdk-1.8.0_91-8.14.0.6-linux_aarch32.tar.gz #arch=armhf
+ARG ZULU_INSTALL_DIR=/usr/lib/jvm
+
 ARG DOWNLOAD_URL="https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.zip"
 ENV APPDIR="/openhab" OPENHAB_HTTP_PORT='8080' OPENHAB_HTTPS_PORT='8443' EXTRA_JAVA_OPTS=''
 
@@ -23,21 +30,22 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 RUN \
     apt-get update && \
     apt-get install --no-install-recommends -y \
-      software-properties-common \
       sudo \
       unzip \
       wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Oracle Java
+# Install Zulu OpenJDK
 RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install --no-install-recommends -y oracle-java8-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+   wget -nv -O /tmp/zulu.tar.gz $ZULU_DOWNLOAD_URL \
+    && mkdir -p $ZULU_INSTALL_DIR
+RUN \
+    tar xzf /tmp/zulu.tar.gz -C ${ZULU_INSTALL_DIR} \
+    && rm /tmp/zulu.tar.gz \
+    && JAVA_NAME=`ls -t $ZULU_INSTALL_DIR | head -1` \
+    && ln -s $ZULU_INSTALL_DIR/$JAVA_NAME $ZULU_INSTALL_DIR/java
+ENV JAVA_HOME=$ZULU_INSTALL_DIR/java
+ENV PATH=$PATH:$JAVA_HOME/bin
 
 # Add openhab user & handle possible device groups for different host systems
 # Container base image puts dialout on group id 20, uucp on id 10
