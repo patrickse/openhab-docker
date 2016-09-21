@@ -28,6 +28,7 @@ RUN \
       sudo \
       unzip \
       wget \
+      ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Zulu OpenJDK
@@ -59,7 +60,7 @@ RUN adduser --disabled-password --gecos '' --home ${APPDIR} openhab &&\
 WORKDIR ${APPDIR}
 
 RUN \
-    wget --no-check-certificate -nv -O /tmp/openhab.zip ${DOWNLOAD_URL} &&\
+    wget -nv -O /tmp/openhab.zip ${DOWNLOAD_URL} &&\
     unzip -q /tmp/openhab.zip -d ${APPDIR} &&\
     rm /tmp/openhab.zip
 
