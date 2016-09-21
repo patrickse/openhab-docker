@@ -4,12 +4,7 @@ FROM multiarch/ubuntu-debootstrap:amd64-wily
 #FROM multiarch/ubuntu-debootstrap:arm64-wily   # arch=arm64
 ARG ARCH=amd64
 
-ARG ZULU_SHA=66faeba9f310cb2cbfa783dea38251b0a57509d8d297d46ffa7a6d18f764dcff
 ARG ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu/bin/zulu8.14.0.1-jdk8.0.91-linux_x64.tar.gz 
-
-#ARG ZULU_SHA=ad204157dd34fe95c8dd3a0b83b6b1a3327019b90d2c14f33bd151917a5ad78a                           #arch=armhf
-#ARG ZULU_DOWNLOAD_URL=http://cdn.azul.com/zulu-embedded/bin/ezdk-1.8.0_91-8.14.0.6-linux_aarch32.tar.gz #arch=armhf
-ARG ZULU_INSTALL_DIR=/usr/lib/jvm
 
 ARG DOWNLOAD_URL="https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.zip"
 ENV APPDIR="/openhab" OPENHAB_HTTP_PORT='8080' OPENHAB_HTTPS_PORT='8443' EXTRA_JAVA_OPTS=''
@@ -38,14 +33,12 @@ RUN \
 # Install Zulu OpenJDK
 RUN \
    wget -nv -O /tmp/zulu.tar.gz $ZULU_DOWNLOAD_URL \
-    && mkdir -p $ZULU_INSTALL_DIR
+    && mkdir -p /usr/lib/jvm
 RUN \
-    tar xzf /tmp/zulu.tar.gz -C ${ZULU_INSTALL_DIR} \
+    tar xzf /tmp/zulu.tar.gz -C /usr/lib/jvm \
     && rm /tmp/zulu.tar.gz \
-    && JAVA_NAME=`ls -t $ZULU_INSTALL_DIR | head -1` \
-    && ln -s $ZULU_INSTALL_DIR/$JAVA_NAME $ZULU_INSTALL_DIR/java
-ENV JAVA_HOME=$ZULU_INSTALL_DIR/java
-ENV PATH=$PATH:$JAVA_HOME/bin
+    && JAVA_NAME=`ls -t /usr/lib/jvm | head -1` \
+    && update-alternatives --install /usr/bin/java java /usr/lib/jvm/$JAVA_NAME/bin/java 100
 
 # Add openhab user & handle possible device groups for different host systems
 # Container base image puts dialout on group id 20, uucp on id 10
@@ -66,7 +59,7 @@ RUN adduser --disabled-password --gecos '' --home ${APPDIR} openhab &&\
 WORKDIR ${APPDIR}
 
 RUN \
-    wget -nv -O /tmp/openhab.zip ${DOWNLOAD_URL} &&\
+    wget --no-check-certificate -nv -O /tmp/openhab.zip ${DOWNLOAD_URL} &&\
     unzip -q /tmp/openhab.zip -d ${APPDIR} &&\
     rm /tmp/openhab.zip
 
